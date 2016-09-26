@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Rule: {{ rulename|escape }}</title>
+  </head>
+  <body>
+    <h1>Rule: {{ rulename|escape }}</h1>
+
+    <h2>Type</h2>
+    This rule is of {{ polynomialname }} type.
+
+    <h2>Polynomials</h2>
+
+    <p>One starts from the polynomial P1 and extends one by one with Pi
+      until the final polynomial defining this rule is reached.
+    </p>
+    <ul>
+    {% for poly in polys %}
+      <li>P{{ loop.index }}<pre>{{ poly }}</pre></li>
+    {% endfor %}
+    </ul>
+
+    <h2>Node locations</h2>
+    <img src={{ rulenodesplot }}>
+
+    <h2>Weights</h2>
+    <img src={{ ruleweightslogplot }}>
+
+    <h2>Rule data</h2>
+
+    <h3>Nodes</h3>
+
+    <table>
+      <tr>
+        <th>Node (ball center)</th>
+        <th>Error (ball radius)</th>
+      </tr>
+      {% for nb in nodeballs %}
+        <tr>
+          <td>{{ nb[0] }}</td>
+          <td>{{ nb[1] }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <h3>Weights</h3>
+
+    <table>
+      <tr>
+        <th>Weight (ball center)</th>
+        <th>Error (ball radius)</th>
+      </tr>
+      {% for wb in weightballs %}
+        <tr>
+          <td>{{ wb[0] }}</td>
+          <td>{{ wb[1] }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <h2>Download</h2>
+    <a href="">csv file</a>
+
+  </body>
+</html>
