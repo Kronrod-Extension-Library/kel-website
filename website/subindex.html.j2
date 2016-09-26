@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ polynomialname }}</title>
+  </head>
+  <body>
+    <h1>{{ polynomialname }}</h1>
+
+    <p>This page provides an overview over the rules of type {{ polynomialname }} type.
+    </p>
+
+    <ul>
+      {% for rulename, rulepage in rules %}
+        <li>
+          <a href={{ rulepage }}>{{ rulename }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+
+  </body>
+</html>
