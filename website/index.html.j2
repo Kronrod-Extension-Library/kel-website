@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Kronrod Extensions</title>
+  </head>
+  <body>
+    <h1>Kronrod Extensions</h1>
+
+    <ul>
+      {% for extensiontype, subindexpage in subindices %}
+        <li>
+          <a href={{ subindexpage }}>{{ extensiontype }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+
+  </body>
+</html>
