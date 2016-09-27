@@ -13,20 +13,22 @@
 
     <p>One starts from the polynomial P1 and extends one by one with Pi
       until the final polynomial defining this rule is reached.
+      Note: Polynomials might be truncated due to size!
+      The full version is available in the download.
     </p>
     <ul>
-    {% for poly in polys %}
-      <li>P{{ loop.index }}<pre>{{ poly }}</pre></li>
-    {% endfor %}
+      {% for poly in polys %}
+        <li>P{{ loop.index }}:<pre>{{ poly }}</pre></li>
+      {% endfor %}
     </ul>
 
-    <h2>Node locations</h2>
+    <h2>Node locations in the complex plane</h2>
     <img src={{ rulenodesplot }}>
 
-    <h2>Weights</h2>
+    <h2>Magnitude of the Weights</h2>
     <img src={{ ruleweightslogplot }}>
 
-    <h2>Rule data</h2>
+    <h2>Quadrature Rule Data</h2>
 
     <h3>Nodes</h3>
 
