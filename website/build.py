@@ -1,7 +1,12 @@
 import os.path as path
+import re
+import itertools
 from jinja2 import Template
 
 from rulefile import parse_rulefile
+
+
+# Rule page part
 
 
 def read_rules_inventory(datapath, datafile='all_rules.dat'):
@@ -83,28 +88,111 @@ def generate_rulepages(ruledatasrcpath, polynomialname, extensiontype):
         generate_rulepage(T, rule, polynomialname, extensiontype)
 
 
-def generate_subindex(ruledatasrcpath, polynomialname, extensiontype):
+# Subindex part
 
-    RI = read_rules_inventory(ruledatasrcpath)
-    RI = sorted(list(map(lambda l: list(map(int, l)), RI)))
 
-    rulenames = list(map(get_rulename, RI))
+def get_ruleslists(rulelistspath):
 
-    pages = [path.join(sitedstpath,
-                       extensiontype,
-                       'rules',
-                       'rule_{}.html'.format("_".join(map(str, rule)))) for rule in RI]
+    rulelistfiles = []
+
+    for file in os.listdir(rulelistspath):
+        m = re.match('rules_n(.*)_maxp(.*)_maxrec(.*).txt', file)
+        datum = tuple(map(int, (m.group(1), m.group(2), m.group(3))))
+        rulelistfiles.append(datum)
+
+    return rulelistfiles
+
+
+def read_rulelistfile(file):
+    rules = []
+
+    with open(file, 'r') as f:
+        for line in f.readlines():
+            if line.startswith('RULE:'):
+                rule = re.split('[\s]+', line.strip())[2:]
+                rules.append(tuple(map(int, rule)))
+
+    return rules
+
+
+def collect_all_rules(rulelistspath, rulelistfiles):
+
+    allrules = {}
+
+    for rulelistfile in rulelistfiles:
+        file = 'rules_n{}_maxp{}_maxrec{}.txt'.format(*rulelistfile)
+        allrules[rulelistfile] = read_rulelistfile(path.join(rulelistspath, file))
+
+    return allrules
+
+
+def merge_rulelists(allrules):
+
+    mergedrules = {}
+
+    key = lambda x: x[0]
+    for g, si in itertools.groupby(sorted(allrules.keys(), key=key), key):
+        pmax = 0
+        rmax = 0
+        rules = []
+
+        for i in si:
+            n, p, r = i
+            pmax = max(pmax, p)
+            rmax = max(rmax, r)
+            rules += allrules[i]
+
+        mergedrules[(g, pmax, rmax)] = sorted(list(set(rules)))
+
+    return mergedrules
+
+
+def rule_names(rules):
+    names = []
+
+    for rule in rules:
+        rulename = get_rulename(rule)
+        pagename = 'rule_{}.html'.format("_".join(map(str, rule)))
+        names.append((rulename, pagename))
+
+    return names
+
+
+def prepare_ruledata(allrules):
+    data = {}
+
+    for rmd, rules in allrules.items():
+        data[rmd] = rule_names(rules)
+
+    return data
+
+
+def generate_subindex_new(ruledatasrcpath, polynomialname, extensiontype):
+
+    rulepath = path.join(ruledatasrcpath, extensiontype)
+
+    rulefiles = get_ruleslists(path.join(rulepath, 'rulelists'))
+
+    rulelists = collect_all_rules(path.join(rulepath, 'rulelists'), rulefiles)
+    rulelists = merge_rulelists(rulelists)
+
+    data = prepare_ruledata(rulelists)
 
     with open(path.join(sitesrcpath, 'subindex.html.j2'), 'r') as f:
         T = Template(f.read())
 
     subindex = T.render(polynomialname=polynomialname,
-                        rules=zip(rulenames, pages))
+                        sitepath=sitedstpath,
+                        extensiontype=extensiontype,
+                        allrules=data)
 
     subindexpagedstpath = path.join(sitedstpath, extensiontype)
 
     with open(path.join(subindexpagedstpath, 'subindex.html'), 'w') as f:
         f.write(subindex)
+
+
+# Main Index part
 
 
 def generate_index(polynomialnames, extensiontypes):
@@ -156,6 +244,16 @@ if __name__ == '__main__':
                 'Kronrod_Extensions_Laguerre': 'lag',
                 'Kronrod_Extensions_Hermite': 'herm'}
 
+    extensiontypes = [
+        'Kronrod_Extensions_Test'
+    ]
+
+    polynomialnames = [
+        'Test'
+    ]
+
+    ext2abbr = {'Kronrod_Extensions_Test': 'test'}
+
     for polynomialname, extensiontype in zip(polynomialnames, extensiontypes):
         dd = path.join(sitedstpath, extensiontype, 'rules')
         if not os.path.exists(dd):
@@ -163,8 +261,8 @@ if __name__ == '__main__':
 
         q = path.join(ruledatasrcpath, extensiontype)
 
-        generate_rulepages(q, polynomialname, extensiontype)
+        #generate_rulepages(q, polynomialname, extensiontype)
 
-        generate_subindex(q, polynomialname, extensiontype)
+        generate_subindex_new(ruledatasrcpath, polynomialname, extensiontype)
 
     generate_index(polynomialnames, extensiontypes)

@@ -1,21 +1,29 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{ polynomialname }}</title>
+    <title>{{ polynomialname }} Polynomials</title>
   </head>
   <body>
-    <h1>{{ polynomialname }}</h1>
+    <h1>{{ polynomialname }} Polynomials</h1>
 
-    <p>This page provides an overview over the rules of type {{ polynomialname }} type.
+    <p>This page provides an overview over the rules of {{ polynomialname }} type.
+    </p>
+
+    {% for rules in allrules|dictsort %}
+      <h2>Base Polynomial Order {{ rules[0][0] }}</h2>
+    <p>
+      Maximal search order: {{ rules[0][1] }}<br>
+      Maximal recursion depth: {{ rules[0][2] }}
     </p>
 
     <ul>
-      {% for rulename, rulepage in rules %}
+      {% for rulename, rulepage in rules[1] %}
         <li>
-          <a href={{ rulepage }}>{{ rulename }}</a>
+          <a href={{ sitepath }}{{ extensiontype }}/rules/{{ rulepage }}>{{ rulename }}</a>
         </li>
       {% endfor %}
     </ul>
+  {% endfor %}
 
   </body>
 </html>
