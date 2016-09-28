@@ -4,6 +4,7 @@ import itertools
 from jinja2 import Template
 
 from rulefile import parse_rulefile
+from rulelistfile import get_rulelist
 
 
 # Rule page part
@@ -91,37 +92,16 @@ def generate_rulepages(ruledatasrcpath, polynomialname, extensiontype):
 # Subindex part
 
 
-def get_ruleslists(rulelistspath):
-
-    rulelistfiles = []
-
-    for file in os.listdir(rulelistspath):
-        m = re.match('rules_n(.*)_maxp(.*)_maxrec(.*).txt', file)
-        datum = tuple(map(int, (m.group(1), m.group(2), m.group(3))))
-        rulelistfiles.append(datum)
-
-    return rulelistfiles
-
-
-def read_rulelistfile(file):
-    rules = []
-
-    with open(file, 'r') as f:
-        for line in f.readlines():
-            if line.startswith('RULE:'):
-                rule = re.split('[\s]+', line.strip())[2:]
-                rules.append(tuple(map(int, rule)))
-
-    return rules
-
-
-def collect_all_rules(rulelistspath, rulelistfiles):
+def collect_all_rules(rulelistspath):
 
     allrules = {}
 
-    for rulelistfile in rulelistfiles:
-        file = 'rules_n{}_maxp{}_maxrec{}.txt'.format(*rulelistfile)
-        allrules[rulelistfile] = read_rulelistfile(path.join(rulelistspath, file))
+    for file in os.listdir(rulelistspath):
+        print(file)
+        if file.startswith('rules_'):
+            m = re.match('rules_n(.*)_maxp(.*)_maxrec(.*).txt', file)
+            datum = tuple(map(int, (m.group(1), m.group(2), m.group(3))))
+            allrules[datum] = get_rulelist(path.join(rulelistspath, file))
 
     return allrules
 
@@ -169,11 +149,9 @@ def prepare_ruledata(allrules):
 
 def generate_subindex_new(ruledatasrcpath, polynomialname, extensiontype):
 
-    rulepath = path.join(ruledatasrcpath, extensiontype)
+    rulelistspath = path.join(ruledatasrcpath, extensiontype, 'rulelists')
 
-    rulefiles = get_ruleslists(path.join(rulepath, 'rulelists'))
-
-    rulelists = collect_all_rules(path.join(rulepath, 'rulelists'), rulefiles)
+    rulelists = collect_all_rules(rulelistspath)
     rulelists = merge_rulelists(rulelists)
 
     data = prepare_ruledata(rulelists)
