@@ -52,13 +52,13 @@ def parse_rulefile(filepath):
                 continue
 
             elif startpolyblock and line.startswith('P'):
-                startpoly.append(line.split(' : ')[1])
+                startpoly.append(line.split(' : ')[1].strip())
 
             elif extpolyblock and line.startswith('P'):
-                extpolys.append(line.split(' : ')[1])
+                extpolys.append(line.split(' : ')[1].strip())
 
             elif endpolyblock and line.startswith('P'):
-                endpoly.append(line.split(' : ')[1])
+                endpoly.append(line.split(' : ')[1].strip())
 
             elif rblock:
                 M = re.match('.*\((.*)\).*\((.*)\)', line)

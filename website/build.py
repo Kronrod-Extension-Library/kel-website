@@ -25,17 +25,6 @@ def rule_names(rules):
     return names
 
 
-def get_datafilenames():
-    ruledatafilerawtar = "rules_raw.tar.xz"
-    ruledatafilenwtar = "rules_nw.tar.xz"
-
-    return (ruledatafilerawtar,
-            ruledatafilenwtar)
-
-
-# Rule page part
-
-
 def get_filenames(rule):
     rulestr = get_rulestr(rule)
     rulenodesplot = "rule_{}_nodes_weights_cp_{}.svg".format(rulestr, rulestr)
@@ -51,7 +40,18 @@ def get_filenames(rule):
             ruledatafilecsv)
 
 
-def generate_rulepage(T, rule, polynomialname, extensiontype):
+def get_datafilenames():
+    ruledatafilerawtar = "rules_raw.tar.xz"
+    ruledatafilenwtar = "rules_nw.tar.xz"
+
+    return (ruledatafilerawtar,
+            ruledatafilenwtar)
+
+
+# Rule page part
+
+
+def generate_rulepage(sitedatasrcpath, sitedstpath, extensiontype, polynomialname, T, rule):
 
     rulename = get_rulename(rule)
 
@@ -66,7 +66,7 @@ def generate_rulepage(T, rule, polynomialname, extensiontype):
     (ruledatafilerawtar,
      ruledatafilenwtar) = get_datafilenames()
 
-    datapath = path.join(ruledatasrcpath, extensiontype, 'rules')
+    datapath = path.join(sitedatasrcpath, extensiontype, 'rules')
 
     print(ruledatafiletxt)
     try:
@@ -77,19 +77,13 @@ def generate_rulepage(T, rule, polynomialname, extensiontype):
          allweights) = parse_rulefile(path.join(datapath, ruledatafiletxt))
     except IOError:
         print('WARNING: File not found: {}'.format(ruledatafiletxt))
-        (startpoly, extpolys, endpoly, allroots, allweights) = ([], [], [], [[], []], [[], []])
+        _, extpolys, endpoly, allroots, allweights = [], [], [], [[], []], [[], []]
 
-    if len(rule) == 1:
-        # No extension, just base rule
-        polys = startpoly
-    else:
-        polys = startpoly + extpolys[1:] + endpoly
+    polynomials = extpolys + endpoly
 
     site = T.render(polynomialname=polynomialname,
-                    sitepath=sitedstpath,
-                    extensiontype=extensiontype,
                     rulename=rulename,
-                    polys=polys,
+                    polynomials=polynomials,
                     rulenodesplot=rulenodesplot,
                     ruleweightsplot=ruleweightsplot,
                     ruleweightslogplot=ruleweightslogplot,
@@ -104,9 +98,9 @@ def generate_rulepage(T, rule, polynomialname, extensiontype):
         f.write(site)
 
 
-def generate_rulepages(ruledatasrcpath, polynomialname, extensiontype):
+def generate_rulepages(sitesrcpath, sitedatasrcpath, sitedstpath, extensiontype, polynomialname):
 
-    rulelistspath = path.join(ruledatasrcpath, extensiontype, 'rulelists')
+    rulelistspath = path.join(sitedatasrcpath, extensiontype, 'rulelists')
 
     rulelists = collect_all_rules(rulelistspath)
     rulelists = merge_rulelists(rulelists)
@@ -115,7 +109,7 @@ def generate_rulepages(ruledatasrcpath, polynomialname, extensiontype):
         T = Template(f.read())
 
     for rule in itertools.chain.from_iterable(rulelists.values()):
-        generate_rulepage(T, rule, polynomialname, extensiontype)
+        generate_rulepage(sitedatasrcpath, sitedstpath, extensiontype, polynomialname, T, rule)
 
 
 # Subindex part
@@ -130,9 +124,9 @@ def prepare_ruledata(allrules):
     return data
 
 
-def generate_subindex_new(ruledatasrcpath, polynomialname, extensiontype):
+def generate_subindex(sitesrcpath, sitedatasrcpath, sitedstpath, extensiontype, polynomialname):
 
-    rulelistspath = path.join(ruledatasrcpath, extensiontype, 'rulelists')
+    rulelistspath = path.join(sitedatasrcpath, extensiontype, 'rulelists')
 
     rulelists = collect_all_rules(rulelistspath)
     rulelists = merge_rulelists(rulelists)
@@ -146,8 +140,6 @@ def generate_subindex_new(ruledatasrcpath, polynomialname, extensiontype):
         T = Template(f.read())
 
     subindex = T.render(polynomialname=polynomialname,
-                        sitepath=sitedstpath,
-                        extensiontype=extensiontype,
                         allrules=data,
                         ruledatafilerawtar=ruledatafilerawtar,
                         ruledatafilenwtar=ruledatafilenwtar)
@@ -161,34 +153,30 @@ def generate_subindex_new(ruledatasrcpath, polynomialname, extensiontype):
 # Main Index part
 
 
-def generate_index(polynomialnames, extensiontypes):
+def generate_index(sitesrcpath, sitedstpath, extensiontypes, polynomialnames):
 
-    pages = [path.join(sitedstpath,
-                       extensiontype,
-                       'subindex.html') for extensiontype in extensiontypes]
-
+    pages = [path.relpath(path.join(sitedstpath,
+                                    extensiontype,
+                                    'subindex.html'), sitedstpath) for extensiontype in extensiontypes]
 
     with open(path.join(sitesrcpath, 'index.html.j2'), 'r') as f:
         T = Template(f.read())
 
     index = T.render(subindices=zip(polynomialnames, pages))
 
-    indexpagedstpath = path.join(sitedstpath)
-
-    with open(path.join(indexpagedstpath, 'index.html'), 'w') as f:
+    with open(path.join(sitedstpath, 'index.html'), 'w') as f:
         f.write(index)
 
 
 if __name__ == '__main__':
 
     import os
+    import shutil
 
-    siteurl = '/scratch/userdata/raoulb/KronrodExtensions/'
+    sitedstpath = '/userdata/raoulb/KESWS'
 
     sitesrcpath = '/u/raoulb/rulerepo/website'
-    sitedstpath = siteurl
-
-    ruledatasrcpath = '/userdata/raoulb/KronrodExtensions/'
+    sitedatasrcpath = '/userdata/raoulb/KronrodExtensions/'
 
     extensiontypes = [
         'Kronrod_Extensions_Legendre',
@@ -212,14 +200,26 @@ if __name__ == '__main__':
         'Test'
     ]
 
+    assert path.exists(sitedstpath)
+
     for polynomialname, extensiontype in zip(polynomialnames, extensiontypes):
-        # TODO: Create full dir structure and copy data
-        dd = path.join(sitedstpath, extensiontype, 'rules')
-        if not os.path.exists(dd):
-            os.makedirs(dd)
+        # Create directory structure
+        for subdir in ('rules', 'data'):
+            dd = path.join(sitedstpath, extensiontype, subdir)
+            if not os.path.exists(dd):
+                os.makedirs(dd)
 
-        generate_rulepages(ruledatasrcpath, polynomialname, extensiontype)
+        # Copy static files
+        shutil.copytree(path.join(sitedatasrcpath, extensiontype, 'plots'),
+                        path.join(sitedstpath, extensiontype, 'plots'))
 
-        generate_subindex_new(ruledatasrcpath, polynomialname, extensiontype)
+        for datafile in get_datafilenames():
+            shutil.copy(path.join(sitedatasrcpath, extensiontype, 'data', datafile),
+                        path.join(sitedstpath, extensiontype, 'data'))
 
-    generate_index(polynomialnames, extensiontypes)
+        # Generate pages
+        generate_rulepages(sitesrcpath, sitedatasrcpath, sitedstpath, extensiontype, polynomialname)
+
+        generate_subindex(sitesrcpath, sitedatasrcpath, sitedstpath, extensiontype, polynomialname)
+
+    generate_index(sitesrcpath, sitedstpath, extensiontypes, polynomialnames)

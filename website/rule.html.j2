@@ -17,16 +17,16 @@
       The complete polynomials are included in the download.
     </p>
     <ul>
-      {% for poly in polys %}
-        <li>P{{ loop.index }}:<pre>{{ poly }}</pre></li>
+      {% for polynomial in polynomials %}
+        <li>P{{ loop.index }}:<pre>{{ polynomial }}</pre></li>
       {% endfor %}
     </ul>
 
     <h2>Node locations in the complex plane</h2>
-    <img src={{ sitepath }}/{{ extensiontype }}/plots/{{ rulenodesplot }}>
+    <img src="../plots/{{ rulenodesplot }}">
 
     <h2>Magnitude of the Weights</h2>
-    <img src={{ sitepath }}/{{ extensiontype }}/plots/{{ ruleweightslogplot }}>
+    <img src="../plots/{{ ruleweightslogplot }}">
 
     <h2>Quadrature Rule Data</h2>
 
@@ -63,7 +63,7 @@
     <h2>Download</h2>
 
     <p>All rules of {{ polynomialname }} type can be downloaded
-      <a href={{ sitepath }}/{{ extensiontype }}/data/{{ ruledatafilenwtar }}>here</a>
+      <a href="../data/{{ ruledatafilenwtar }}">here</a>
       packed into a single file.
     </p>
 

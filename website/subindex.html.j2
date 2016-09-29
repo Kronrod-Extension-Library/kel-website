@@ -13,11 +13,11 @@
     </p>
     <ul>
       <li>
-        <a href={{ sitepath }}/{{ extensiontype }}/data/{{ ruledatafilenwtar }}>
+        <a href="data/{{ ruledatafilenwtar }}">
           csv files</a> with nodes and weights
       </li>
       <li>
-        <a href={{ sitepath }}/{{ extensiontype }}/data/{{ ruledatafilerawtar }}>
+        <a href="data/{{ ruledatafilerawtar }}">
           raw text files</a> as output by the 'kes' software
       </li>
     </ul>
@@ -34,7 +34,7 @@
     <ul>
       {% for rulename, rulepage in rules[1] %}
         <li>
-          <a href={{ sitepath }}/{{ extensiontype }}/rules/{{ rulepage }}>{{ rulename }}</a>
+          <a href="rules/{{ rulepage }}">{{ rulename }}</a>
         </li>
       {% endfor %}
     </ul>
