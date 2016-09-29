@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Rule: {{ rulename|escape }}</title>
   </head>
   <body>
@@ -29,10 +30,13 @@
     </ul>
 
     <h2>Node locations in the complex plane</h2>
-    <img src="../plots/{{ rulenodesplot }}">
+    <img src="../plots/{{ rulenodesplot }}"
+         alt="Plot of the node locations in the complex plane.">
 
     <h2>Magnitude of the Weights</h2>
-    <img src="../plots/{{ ruleweightslogplot }}">
+    <img src="../plots/{{ ruleweightslogplot }}"
+         alt="Logarithmic magnitude of the weights
+         plotted against the (real part) of the nodes.">
 
     <h2>Quadrature Rule Data</h2>
 
