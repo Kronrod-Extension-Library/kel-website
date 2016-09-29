@@ -11,14 +11,20 @@
 
     <h2>Polynomials</h2>
 
-    <p>One starts from the polynomial P1 and extends one by one with Pi
-      until the final polynomial defining this rule is reached.
+    <p>One starts from the polynomial
+      <math><mstyle><msub><mi>P</mi><mn>1</mn></msub></mstyle></math>
+      and extends one by one with
+      <math><mstyle><msub><mi>P</mi><mn>i</mn></msub></mstyle></math>
+      until the final polynomial defining this rule is reached.<br>
       Note: Polynomials might be truncated due to size!
       The complete polynomials are included in the download.
     </p>
     <ul>
       {% for polynomial in polynomials %}
-        <li>P{{ loop.index }}:<pre>{{ polynomial }}</pre></li>
+        <li>
+          <math><mstyle><msub><mi>P</mi><mn>{{ loop.index }}</mn></msub></mstyle></math>:<br>
+          {{ polynomial }}
+        </li>
       {% endfor %}
     </ul>
 

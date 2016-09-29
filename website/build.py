@@ -1,5 +1,7 @@
 import os.path as path
 import itertools
+import asciimathml
+from xml.etree.ElementTree import tostring
 from jinja2 import Template
 
 from rulefile import parse_rulefile
@@ -80,6 +82,7 @@ def generate_rulepage(sitedatasrcpath, sitedstpath, extensiontype, polynomialnam
         _, extpolys, endpoly, allroots, allweights = [], [], [], [[], []], [[], []]
 
     polynomials = extpolys + endpoly
+    polynomials = [tostring(asciimathml.parse(p)).decode('ascii') for p in polynomials]
 
     site = T.render(polynomialname=polynomialname,
                     rulename=rulename,
