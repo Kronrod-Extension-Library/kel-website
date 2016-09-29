@@ -32,7 +32,6 @@ def parse_rulefile(filepath):
                 endpolyblock = True
 
             elif line.startswith("---"):
-                extpolyblock = False
                 endpolyblock = False
 
             elif line.startswith("The nodes are"):
@@ -52,13 +51,13 @@ def parse_rulefile(filepath):
                 wblock = False
                 continue
 
-            elif startpolyblock:
+            elif startpolyblock and line.startswith('P'):
                 startpoly.append(line.split(' : ')[1])
 
-            elif extpolyblock:
+            elif extpolyblock and line.startswith('P'):
                 extpolys.append(line.split(' : ')[1])
 
-            elif endpolyblock:
+            elif endpolyblock and line.startswith('P'):
                 endpoly.append(line.split(' : ')[1])
 
             elif rblock:

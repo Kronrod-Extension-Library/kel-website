@@ -1,19 +1,9 @@
 import os.path as path
-import re
 import itertools
 from jinja2 import Template
 
 from rulefile import parse_rulefile
-from rulelistfile import get_rulelist
-
-
-# Rule page part
-
-
-def read_rules_inventory(datapath, datafile='all_rules.dat'):
-    with open(path.join(datapath, datafile)) as f:
-        rules = f.readlines()
-    return map(lambda s: s.strip().split(' '), rules)
+from rulelistfile import collect_all_rules, merge_rulelists
 
 
 def get_rulename(rule):
@@ -22,109 +12,6 @@ def get_rulename(rule):
 
 def get_rulestr(rule):
     return "_".join(map(str, rule))
-
-
-def get_filenames(rule, ruletype):
-    rulestr = get_rulestr(rule)
-    ruledatafile = "rule_{}_{}.dat".format(ruletype, rulestr)
-    rulenodesplot = "rule_{}_{}_nodes_weights_cp_{}.png".format(ruletype, rulestr, rulestr)
-    ruleweightsplot = "rule_{}_{}_nodes_weights_{}.png".format(ruletype, rulestr, rulestr)
-    ruleweightslogplot = "rule_{}_{}_nodes_weights_log_{}.png".format(ruletype, rulestr, rulestr)
-
-    return (ruledatafile,
-            rulenodesplot,
-            ruleweightsplot,
-            ruleweightslogplot)
-
-
-def generate_rulepage(T, rule, polynomialname, extensiontype):
-
-    rulename = get_rulename(rule)
-
-    rulestr = get_rulestr(rule)
-
-    (ruledatafile,
-     rulenodesplot,
-     ruleweightsplot,
-     ruleweightslogplot) = get_filenames(rule, ext2abbr[extensiontype])
-
-    datapath = path.join(ruledatasrcpath, extensiontype, 'rules')
-
-    (startpoly,
-     extpolys,
-     endpoly,
-     allroots,
-     allweights) = parse_rulefile(path.join(datapath, ruledatafile))
-
-    if len(rule) == 1:
-        # No extension, just base rule
-        polys = startpoly
-    else:
-        polys = startpoly + extpolys[1:] + endpoly
-
-    site = T.render(polynomialname=polynomialname,
-                    rulename=rulename,
-                    polys=polys,
-                    rulenodesplot=path.join(datapath, rulenodesplot),
-                    ruleweightsplot=path.join(datapath, ruleweightsplot),
-                    ruleweightslogplot=path.join(datapath, ruleweightslogplot),
-                    nodeballs=allroots[0],
-                    weightballs=allweights[0])
-
-    rulepagedstpath = path.join(sitedstpath, extensiontype, 'rules')
-
-    with open(path.join(rulepagedstpath, 'rule_{}.html'.format(rulestr)), 'w') as f:
-        f.write(site)
-
-
-def generate_rulepages(ruledatasrcpath, polynomialname, extensiontype):
-
-    RI = read_rules_inventory(ruledatasrcpath)
-
-    with open(path.join(sitesrcpath, 'rule.html.j2'), 'r') as f:
-        T = Template(f.read())
-
-    for rule in list(RI):
-        print(rule)
-        generate_rulepage(T, rule, polynomialname, extensiontype)
-
-
-# Subindex part
-
-
-def collect_all_rules(rulelistspath):
-
-    allrules = {}
-
-    for file in os.listdir(rulelistspath):
-        print(file)
-        if file.startswith('rules_'):
-            m = re.match('rules_n(.*)_maxp(.*)_maxrec(.*).txt', file)
-            datum = tuple(map(int, (m.group(1), m.group(2), m.group(3))))
-            allrules[datum] = get_rulelist(path.join(rulelistspath, file))
-
-    return allrules
-
-
-def merge_rulelists(allrules):
-
-    mergedrules = {}
-
-    key = lambda x: x[0]
-    for g, si in itertools.groupby(sorted(allrules.keys(), key=key), key):
-        pmax = 0
-        rmax = 0
-        rules = []
-
-        for i in si:
-            n, p, r = i
-            pmax = max(pmax, p)
-            rmax = max(rmax, r)
-            rules += allrules[i]
-
-        mergedrules[(g, pmax, rmax)] = sorted(list(set(rules)))
-
-    return mergedrules
 
 
 def rule_names(rules):
@@ -136,6 +23,102 @@ def rule_names(rules):
         names.append((rulename, pagename))
 
     return names
+
+
+def get_datafilenames():
+    ruledatafilerawtar = "rules_raw.tar.xz"
+    ruledatafilenwtar = "rules_nw.tar.xz"
+
+    return (ruledatafilerawtar,
+            ruledatafilenwtar)
+
+
+# Rule page part
+
+
+def get_filenames(rule):
+    rulestr = get_rulestr(rule)
+    rulenodesplot = "rule_{}_nodes_weights_cp_{}.svg".format(rulestr, rulestr)
+    ruleweightsplot = "rule_{}_nodes_weights_{}.svg".format(rulestr, rulestr)
+    ruleweightslogplot = "rule_{}_nodes_weights_log_{}.svg".format(rulestr, rulestr)
+    ruledatafiletxt = "rule_{}.txt".format(rulestr)
+    ruledatafilecsv = "rule_{}_qr_0.csv".format(rulestr)
+
+    return (rulenodesplot,
+            ruleweightsplot,
+            ruleweightslogplot,
+            ruledatafiletxt,
+            ruledatafilecsv)
+
+
+def generate_rulepage(T, rule, polynomialname, extensiontype):
+
+    rulename = get_rulename(rule)
+
+    rulestr = get_rulestr(rule)
+
+    (rulenodesplot,
+     ruleweightsplot,
+     ruleweightslogplot,
+     ruledatafiletxt,
+     ruledatafilecsv) = get_filenames(rule)
+
+    (ruledatafilerawtar,
+     ruledatafilenwtar) = get_datafilenames()
+
+    datapath = path.join(ruledatasrcpath, extensiontype, 'rules')
+
+    print(ruledatafiletxt)
+    try:
+        (startpoly,
+         extpolys,
+         endpoly,
+         allroots,
+         allweights) = parse_rulefile(path.join(datapath, ruledatafiletxt))
+    except IOError:
+        print('WARNING: File not found: {}'.format(ruledatafiletxt))
+        (startpoly, extpolys, endpoly, allroots, allweights) = ([], [], [], [[], []], [[], []])
+
+    if len(rule) == 1:
+        # No extension, just base rule
+        polys = startpoly
+    else:
+        polys = startpoly + extpolys[1:] + endpoly
+
+    site = T.render(polynomialname=polynomialname,
+                    sitepath=sitedstpath,
+                    extensiontype=extensiontype,
+                    rulename=rulename,
+                    polys=polys,
+                    rulenodesplot=rulenodesplot,
+                    ruleweightsplot=ruleweightsplot,
+                    ruleweightslogplot=ruleweightslogplot,
+                    nodeballs=allroots[0],
+                    weightballs=allweights[0],
+                    ruledatafilerawtar=ruledatafilerawtar,
+                    ruledatafilenwtar=ruledatafilenwtar)
+
+    rulepagedstpath = path.join(sitedstpath, extensiontype, 'rules')
+
+    with open(path.join(rulepagedstpath, 'rule_{}.html'.format(rulestr)), 'w') as f:
+        f.write(site)
+
+
+def generate_rulepages(ruledatasrcpath, polynomialname, extensiontype):
+
+    rulelistspath = path.join(ruledatasrcpath, extensiontype, 'rulelists')
+
+    rulelists = collect_all_rules(rulelistspath)
+    rulelists = merge_rulelists(rulelists)
+
+    with open(path.join(sitesrcpath, 'rule.html.j2'), 'r') as f:
+        T = Template(f.read())
+
+    for rule in itertools.chain.from_iterable(rulelists.values()):
+        generate_rulepage(T, rule, polynomialname, extensiontype)
+
+
+# Subindex part
 
 
 def prepare_ruledata(allrules):
@@ -156,13 +139,18 @@ def generate_subindex_new(ruledatasrcpath, polynomialname, extensiontype):
 
     data = prepare_ruledata(rulelists)
 
+    ruledatafilerawtar = "rules_raw.tar.xz"
+    ruledatafilenwtar = "rules_nw.tar.xz"
+
     with open(path.join(sitesrcpath, 'subindex.html.j2'), 'r') as f:
         T = Template(f.read())
 
     subindex = T.render(polynomialname=polynomialname,
                         sitepath=sitedstpath,
                         extensiontype=extensiontype,
-                        allrules=data)
+                        allrules=data,
+                        ruledatafilerawtar=ruledatafilerawtar,
+                        ruledatafilenwtar=ruledatafilenwtar)
 
     subindexpagedstpath = path.join(sitedstpath, extensiontype)
 
@@ -195,10 +183,10 @@ if __name__ == '__main__':
 
     import os
 
-    siteurl = '/u/raoulb'
+    siteurl = '/scratch/userdata/raoulb/KronrodExtensions/'
 
     sitesrcpath = '/u/raoulb/rulerepo/website'
-    sitedstpath = path.join(siteurl, 'ruleweb')
+    sitedstpath = siteurl
 
     ruledatasrcpath = '/userdata/raoulb/KronrodExtensions/'
 
@@ -216,12 +204,6 @@ if __name__ == '__main__':
         'Laguerre',
         'Hermite (probabilists\')']
 
-    ext2abbr = {'Kronrod_Extensions_Legendre': 'leg',
-                'Kronrod_Extensions_ChebyshevT': '',
-                'Kronrod_Extensions_ChebyshevU': '',
-                'Kronrod_Extensions_Laguerre': 'lag',
-                'Kronrod_Extensions_Hermite': 'herm'}
-
     extensiontypes = [
         'Kronrod_Extensions_Test'
     ]
@@ -230,16 +212,13 @@ if __name__ == '__main__':
         'Test'
     ]
 
-    ext2abbr = {'Kronrod_Extensions_Test': 'test'}
-
     for polynomialname, extensiontype in zip(polynomialnames, extensiontypes):
+        # TODO: Create full dir structure and copy data
         dd = path.join(sitedstpath, extensiontype, 'rules')
         if not os.path.exists(dd):
             os.makedirs(dd)
 
-        q = path.join(ruledatasrcpath, extensiontype)
-
-        #generate_rulepages(q, polynomialname, extensiontype)
+        generate_rulepages(ruledatasrcpath, polynomialname, extensiontype)
 
         generate_subindex_new(ruledatasrcpath, polynomialname, extensiontype)
 
