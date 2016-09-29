@@ -14,7 +14,7 @@
     <p>One starts from the polynomial P1 and extends one by one with Pi
       until the final polynomial defining this rule is reached.
       Note: Polynomials might be truncated due to size!
-      The full version is available in the download.
+      The complete polynomials are included in the download.
     </p>
     <ul>
       {% for poly in polys %}
@@ -23,10 +23,10 @@
     </ul>
 
     <h2>Node locations in the complex plane</h2>
-    <img src={{ rulenodesplot }}>
+    <img src={{ sitepath }}/{{ extensiontype }}/plots/{{ rulenodesplot }}>
 
     <h2>Magnitude of the Weights</h2>
-    <img src={{ ruleweightslogplot }}>
+    <img src={{ sitepath }}/{{ extensiontype }}/plots/{{ ruleweightslogplot }}>
 
     <h2>Quadrature Rule Data</h2>
 
@@ -61,7 +61,11 @@
     </table>
 
     <h2>Download</h2>
-    <a href="">csv file</a>
+
+    <p>All rules of {{ polynomialname }} type can be downloaded
+      <a href={{ sitepath }}/{{ extensiontype }}/data/{{ ruledatafilenwtar }}>here</a>
+      packed into a single file.
+    </p>
 
   </body>
 </html>

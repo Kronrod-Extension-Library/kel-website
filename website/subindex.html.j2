@@ -6,11 +6,26 @@
   <body>
     <h1>{{ polynomialname }} Polynomials</h1>
 
-    <p>This page provides an overview over the rules of {{ polynomialname }} type.
+    <h2>Download</h2>
+
+    <p>This page provides an overview of the rules of {{ polynomialname }} type.
+      All rules listed below can be downloaded packed into a single file here:
     </p>
+    <ul>
+      <li>
+        <a href={{ sitepath }}/{{ extensiontype }}/data/{{ ruledatafilenwtar }}>
+          csv files</a> with nodes and weights
+      </li>
+      <li>
+        <a href={{ sitepath }}/{{ extensiontype }}/data/{{ ruledatafilerawtar }}>
+          raw text files</a> as output by the 'kes' software
+      </li>
+    </ul>
+
+    <h2>Detailed Listing</h2>
 
     {% for rules in allrules|dictsort %}
-      <h2>Base Polynomial Order {{ rules[0][0] }}</h2>
+      <h3>Base Polynomial Order {{ rules[0][0] }}</h3>
     <p>
       Maximal search order: {{ rules[0][1] }}<br>
       Maximal recursion depth: {{ rules[0][2] }}
@@ -19,7 +34,7 @@
     <ul>
       {% for rulename, rulepage in rules[1] %}
         <li>
-          <a href={{ sitepath }}{{ extensiontype }}/rules/{{ rulepage }}>{{ rulename }}</a>
+          <a href={{ sitepath }}/{{ extensiontype }}/rules/{{ rulepage }}>{{ rulename }}</a>
         </li>
       {% endfor %}
     </ul>
