@@ -176,44 +176,42 @@ if __name__ == '__main__':
     import os
     import shutil
 
-    sitedstpath = '/userdata/raoulb/KESWS'
+    sitedstpath = '/userdata/raoulb/KEL'
 
     sitesrcpath = '/u/raoulb/rulerepo/website'
-    sitedatasrcpath = '/userdata/raoulb/KronrodExtensions/'
+    sitedatasrcpath = '/userdata/raoulb/KELDATA'
 
     extensiontypes = [
         'Kronrod_Extensions_Legendre',
         'Kronrod_Extensions_ChebyshevT',
         'Kronrod_Extensions_ChebyshevU',
         'Kronrod_Extensions_Laguerre',
-        'Kronrod_Extensions_Hermite']
+        'Kronrod_Extensions_Hermite',
+        'Kronrod_Extensions_HermitePro'
+    ]
 
     polynomialnames = [
         'Legendre',
         'Chebyshev T (first kind)',
         'Chebyshev U (second kind)',
         'Laguerre',
-        'Hermite (probabilists\')']
-
-    extensiontypes = [
-        'Kronrod_Extensions_Test'
-    ]
-
-    polynomialnames = [
-        'Test'
+        'Hermite (physicists\')',
+        'Hermite (probabilists\')'
     ]
 
     assert path.exists(sitedstpath)
 
     for polynomialname, extensiontype in zip(polynomialnames, extensiontypes):
         # Create directory structure
-        for subdir in ('rules', 'data'):
+        for subdir in ('rules', 'data', 'plots'):
             dd = path.join(sitedstpath, extensiontype, subdir)
             if not os.path.exists(dd):
                 os.makedirs(dd)
 
         # Copy static files
-        shutil.copytree(path.join(sitedatasrcpath, extensiontype, 'plots'),
+        spath = path.join(sitedatasrcpath, extensiontype, 'plots')
+        for file in os.listdir(spath):
+            shutil.copy(path.join(spath, file),
                         path.join(sitedstpath, extensiontype, 'plots'))
 
         for datafile in get_datafilenames():
