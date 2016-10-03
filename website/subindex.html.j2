@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" type="text/css" href="../style.css">
     <title>{{ polynomialname }} Polynomials</title>
   </head>
   <body>
@@ -25,6 +26,9 @@
 
     <h2>Detailed Listing</h2>
 
+    <p><b>Note:</b> Rules printed in red have negative weights.
+    </p>
+
     {% for rules in allrules|dictsort %}
       <h3>Base Polynomial Order {{ rules[0][0] }}</h3>
     <p>
@@ -33,9 +37,9 @@
     </p>
 
     <ul>
-      {% for rulename, rulepage in rules[1] %}
+      {% for rulename, rulepage, valid_rule in rules[1] %}
         <li>
-          <a href="rules/{{ rulepage }}">{{ rulename }}</a>
+          <a href="rules/{{ rulepage }}" data-valid-rule={{ valid_rule }}>{{ rulename }}</a>
         </li>
       {% endfor %}
     </ul>

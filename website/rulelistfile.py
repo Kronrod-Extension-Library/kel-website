@@ -21,7 +21,6 @@ def collect_all_rules(rulelistspath):
     allrules = {}
 
     for file in os.listdir(rulelistspath):
-        print(file)
         if file.startswith('rules_'):
             m = re.match('rules_n(.*)_maxp(.*)_maxrec(.*).txt', file)
             datum = tuple(map(int, (m.group(1), m.group(2), m.group(3))))

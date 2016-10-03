@@ -1,0 +1,6 @@
+[data-valid-rule=False] {
+    color: red;
+}
+[data-valid-rule=True] {
+    color: green;
+}

@@ -16,13 +16,14 @@ def get_rulestr(rule):
     return "_".join(map(str, rule))
 
 
-def rule_names(rules):
+def rule_names(sitedatasrcpath, extensiontype, rules):
     names = []
 
     for rule in rules:
         rulename = get_rulename(rule)
         pagename = 'rule_{}.html'.format("_".join(map(str, rule)))
-        names.append((rulename, pagename))
+        valid_rule = validate_rule(sitedatasrcpath, extensiontype, rule)
+        names.append((rulename, pagename, valid_rule))
 
     return names
 
@@ -50,6 +51,19 @@ def get_datafilenames():
             ruledatafilenwtar)
 
 
+def validate_rule(sitedatasrcpath, extensiontype, rule):
+    datapath = path.join(sitedatasrcpath, extensiontype, 'rules')
+    rulevdatafiletxt = "rule_vw_{}.txt".format(get_rulestr(rule))
+    try:
+        with open(path.join(datapath, rulevdatafiletxt), 'r') as f:
+            valid_rule = 'EXTENSION WITH INVALID WEIGHTS' not in f.read()
+    except IOError:
+        print('WARNING: Can not validate rule {}: file not found: {}'.format(rule, rulevdatafiletxt))
+        valid_rule = False
+
+    return valid_rule
+
+
 # Rule page part
 
 
@@ -70,7 +84,6 @@ def generate_rulepage(sitedatasrcpath, sitedstpath, extensiontype, polynomialnam
 
     datapath = path.join(sitedatasrcpath, extensiontype, 'rules')
 
-    print(ruledatafiletxt)
     try:
         (startpoly,
          extpolys,
@@ -81,12 +94,15 @@ def generate_rulepage(sitedatasrcpath, sitedstpath, extensiontype, polynomialnam
         print('WARNING: File not found: {}'.format(ruledatafiletxt))
         _, extpolys, endpoly, allroots, allweights = [], [], [], [[], []], [[], []]
 
+    valid_rule = validate_rule(sitedatasrcpath, extensiontype, rule)
+
     polynomials = extpolys + endpoly
     polynomials = [tostring(asciimathml.parse(p)).decode('ascii') for p in polynomials]
 
     site = T.render(polynomialname=polynomialname,
                     rulename=rulename,
                     polynomials=polynomials,
+                    valid_rule=valid_rule,
                     rulenodesplot=rulenodesplot,
                     ruleweightsplot=ruleweightsplot,
                     ruleweightslogplot=ruleweightslogplot,
@@ -118,11 +134,11 @@ def generate_rulepages(sitesrcpath, sitedatasrcpath, sitedstpath, extensiontype,
 # Subindex part
 
 
-def prepare_ruledata(allrules):
+def prepare_ruledata(sitedatasrcpath, extensiontype, allrules):
     data = {}
 
     for rmd, rules in allrules.items():
-        data[rmd] = rule_names(rules)
+        data[rmd] = rule_names(sitedatasrcpath, extensiontype, rules)
 
     return data
 
@@ -134,7 +150,7 @@ def generate_subindex(sitesrcpath, sitedatasrcpath, sitedstpath, extensiontype, 
     rulelists = collect_all_rules(rulelistspath)
     rulelists = merge_rulelists(rulelists)
 
-    data = prepare_ruledata(rulelists)
+    data = prepare_ruledata(sitedatasrcpath, extensiontype, rulelists)
 
     ruledatafilerawtar = "rules_raw.tar.xz"
     ruledatafilenwtar = "rules_nw.tar.xz"
@@ -202,6 +218,8 @@ if __name__ == '__main__':
     assert path.exists(sitedstpath)
 
     for polynomialname, extensiontype in zip(polynomialnames, extensiontypes):
+        print(extensiontype)
+
         # Create directory structure
         for subdir in ('rules', 'data', 'plots'):
             dd = path.join(sitedstpath, extensiontype, subdir)
@@ -224,3 +242,7 @@ if __name__ == '__main__':
         generate_subindex(sitesrcpath, sitedatasrcpath, sitedstpath, extensiontype, polynomialname)
 
     generate_index(sitesrcpath, sitedstpath, extensiontypes, polynomialnames)
+
+    # Global static data
+    shutil.copy(path.join(sitesrcpath, 'style.css'),
+                sitedstpath)
