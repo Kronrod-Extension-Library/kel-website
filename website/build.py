@@ -189,13 +189,25 @@ def generate_index(sitesrcpath, sitedstpath, extensiontypes, polynomialnames):
 
 if __name__ == '__main__':
 
+    import argparse
     import os
     import shutil
 
-    sitedstpath = '/userdata/raoulb/KEL'
+    parser = argparse.ArgumentParser()
 
-    sitesrcpath = '/u/raoulb/rulerepo/website'
-    sitedatasrcpath = '/userdata/raoulb/KELDATA'
+    parser.add_argument("sitesrcpath",
+                        type=str,
+                        help="The site source path")
+
+    parser.add_argument("sitedatasrcpath",
+                        type=str,
+                        help="The site data source path")
+
+    parser.add_argument("sitedstpath",
+                        type=str,
+                        help="The site destination path")
+
+    args = parser.parse_args()
 
     extensiontypes = [
         'Kronrod_Extensions_Legendre',
@@ -215,34 +227,34 @@ if __name__ == '__main__':
         'Hermite (probabilists\')'
     ]
 
-    assert path.exists(sitedstpath)
+    assert path.exists(args.sitedstpath)
 
     for polynomialname, extensiontype in zip(polynomialnames, extensiontypes):
         print(extensiontype)
 
         # Create directory structure
         for subdir in ('rules', 'data', 'plots'):
-            dd = path.join(sitedstpath, extensiontype, subdir)
+            dd = path.join(args.sitedstpath, extensiontype, subdir)
             if not os.path.exists(dd):
                 os.makedirs(dd)
 
         # Copy static files
-        spath = path.join(sitedatasrcpath, extensiontype, 'plots')
+        spath = path.join(args.sitedatasrcpath, extensiontype, 'plots')
         for file in os.listdir(spath):
             shutil.copy(path.join(spath, file),
-                        path.join(sitedstpath, extensiontype, 'plots'))
+                        path.join(args.sitedstpath, extensiontype, 'plots'))
 
         for datafile in get_datafilenames():
-            shutil.copy(path.join(sitedatasrcpath, extensiontype, 'data', datafile),
-                        path.join(sitedstpath, extensiontype, 'data'))
+            shutil.copy(path.join(args.sitedatasrcpath, extensiontype, 'data', datafile),
+                        path.join(args.sitedstpath, extensiontype, 'data'))
 
         # Generate pages
-        generate_rulepages(sitesrcpath, sitedatasrcpath, sitedstpath, extensiontype, polynomialname)
+        generate_rulepages(args.sitesrcpath, args.sitedatasrcpath, args.sitedstpath, extensiontype, polynomialname)
 
-        generate_subindex(sitesrcpath, sitedatasrcpath, sitedstpath, extensiontype, polynomialname)
+        generate_subindex(args.sitesrcpath, args.sitedatasrcpath, args.sitedstpath, extensiontype, polynomialname)
 
-    generate_index(sitesrcpath, sitedstpath, extensiontypes, polynomialnames)
+    generate_index(args.sitesrcpath, args.sitedstpath, extensiontypes, polynomialnames)
 
     # Global static data
-    shutil.copy(path.join(sitesrcpath, 'style.css'), sitedstpath)
-    shutil.copy(path.join(sitesrcpath, 'kel.bib'), sitedstpath)
+    shutil.copy(path.join(args.sitesrcpath, 'style.css'), args.sitedstpath)
+    shutil.copy(path.join(args.sitesrcpath, 'kel.bib'), args.sitedstpath)
