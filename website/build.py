@@ -244,5 +244,5 @@ if __name__ == '__main__':
     generate_index(sitesrcpath, sitedstpath, extensiontypes, polynomialnames)
 
     # Global static data
-    shutil.copy(path.join(sitesrcpath, 'style.css'),
-                sitedstpath)
+    shutil.copy(path.join(sitesrcpath, 'style.css'), sitedstpath)
+    shutil.copy(path.join(sitesrcpath, 'kel.bib'), sitedstpath)
